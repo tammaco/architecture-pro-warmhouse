@@ -1,0 +1,23 @@
+@startuml
+title WarmHouse Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "A user of warmhouse")
+
+System(WarmHouse, "Warm House", "WarmHouse System")
+System_Ext(Devices, "Devices", "All devices in user's house")
+System_Ext(Hub, "Hub", "Hub for devices", "All devices are connected to one hub")
+
+Rel(user, WarmHouse, "Uses the system", "web app/mobile app")
+
+Rel(WarmHouse, Hub, "Send commands")
+Rel(Hub, WarmHouse, "Send information about the status of devices")
+
+Rel(Hub, Devices, "Send commands", "Wi-Fi/Z‑Wave/Zigbee")
+Rel(Devices, Hub, "Send current status")
+
+
+@enduml

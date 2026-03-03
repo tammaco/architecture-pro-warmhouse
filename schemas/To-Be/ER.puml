@@ -1,0 +1,170 @@
+@startuml WarmHouse ER Diagram
+title WarmHouse ER Diagram
+
+entity User {
+  *id : INT <<generated>>
+  --
+  *name : VARCHAR
+  *email : VARCHAR [NULL]
+  *phone : VARCHAR [NULL]
+  *login : VARCHAR
+  *password : VARCHAR
+  *created_at : TIMESTAMP
+  *updated_at : TIMESTAMP
+}
+
+entity House {
+  *id : INT <<generated>>
+  --
+  *name : VARCHAR
+  *address : VARCHAR
+  *hub_serial_number : VARCHAR
+  *hub_ip_address : VARCHAR
+  *created_at : TIMESTAMP
+  *updated_at : TIMESTAMP
+
+  #user_id : INT <<FK>>
+}
+
+entity HouseLocation {
+  *id : INT <<generated>>
+  --
+  *name : VARCHAR
+  *created_at : TIMESTAMP
+  *updated_at : TIMESTAMP
+
+  #house_id : INT <<FK>>
+}
+
+entity DeviceType {
+  *id : INT <<generated>>
+  --
+  *name : VARCHAR
+  *manufacturer : VARCHAR
+  *model : VARCHAR
+  *possible_metrics : JSON
+  *possible_actions : JSON
+}
+
+entity Device {
+  *id : INT <<generated>>
+  --
+  *serial_number : VARCHAR
+  *name : VARCHAR [NULL]
+  *is_active : BOOLEAN
+  
+  #device_type_id : INT <<FK>> 
+  #house_id : INT <<FK>>
+  #location_id : INT <<FK>> [NULL]
+}
+
+entity Action {
+  *id : INT <<generated>>
+  --
+  *name : VARCHAR --"set_temperature", "set_brightness", "turn_on"
+
+  #device_type_id : INT <<FK>>
+}
+
+entity DeviceAction {
+  *id : INT <<generated>>
+  --
+  *timestamp : TIMESTAMP
+  *source : VARCHAR -- "user", "scenario", "hub"
+  *status : VARCHAR -- "started", "pending", "completed"
+  *metric_parameters : JSON
+  *result : JSON [NULL]
+  *created_at : TIMESTAMP
+  *completed_at : TIMESTAMP
+
+  #action_id : INT <<FK>>
+  #device_id : INT <<FK>>
+  #user_id : INT <<FK>> [NULL]
+  #scenario_id : INT <<FK>> [NULL]
+}
+
+entity DeviceState {
+  *id : INT <<generated>>
+  --
+  *state : JSON  -- {"power":"on", "brightness":80, "temperature":22.5}
+  *last_updated : TIMESTAMP
+
+  #device_id : INT <<FK>> 
+}
+
+entity TelemetryData {
+  *id : INT <<generated>>
+  --
+  *metric: VARCHAR -- "temperature", "power", "battery", "brightness"
+  *value : DECIMAL
+  *unit : VARCHAR
+  *timestamp : TIMESTAMP
+
+  #device_id : INT <<FK>>
+}
+
+entity Schedule {
+  *id : INT <<generated>>
+  --
+  *type: VARCHAR -- "once", "daily", "weekly" [NULL]
+  *hour : INT
+  *minute : INT
+  *week_day : INT [NULL]
+}
+
+entity Scenario {
+  *id : INT <<generated>>
+  --
+  *name : VARCHAR
+  *is_active : BOOLEAN
+  *created_at : TIMESTAMP
+  *updated_at : TIMESTAMP
+
+  #house_id : INT <<FK>>
+}
+
+entity ScenarioDevice {
+  *id : INT <<generated>>
+  --
+  #scenario_id : INT <<FK>>
+  #device_id : INT <<FK>>
+}
+
+entity ScenarioSchedule {
+  *id : INT <<generated>>
+  --
+  #scenario_id : INT <<FK>>
+  #schedule_id : INT <<FK>>
+}
+
+entity ScenarioAction {
+  *id : INT <<generated>>
+  --
+  *metric_parameters : JSON
+  #scenario_id : INT <<FK>>
+  #device_id : INT <<FK>>
+  #action_id : INT <<FK>>
+}
+
+
+User ||--o{ House : "creates"
+
+House ||--o{ HouseLocation : "has locations"
+House ||--o{ Scenario : "has scenarios"
+
+DeviceType ||--o{ Device : "classifies"
+
+Device ||--|| DeviceState : "has state"
+
+Action ||--o{ DeviceAction : "classifies"
+
+TelemetryData }o--|| Device : "creates by"
+
+Scenario ||--o{ ScenarioAction : "has actions"
+Scenario ||--o{ ScenarioDevice : "has devices"
+Scenario ||--o{ DeviceAction : "creates actions"
+
+ScenarioAction }o--|| Device : "has device"
+ScenarioAction }o--|| Action : "has action"
+
+@enduml

@@ -1,0 +1,30 @@
+@startuml WarmHouse Container Diagram
+title  WarmHouse Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "A user of warmhouse system")
+System_Ext(hub, "Hub", "User's hub")
+
+Container_Boundary(WarmHouseSystem, "WarmHouse System") {
+  Container(webApp, "Web Application", "React", "Allows users to manage house and view telemetry")
+  Container(mobileApp, "Mobile Application", "React Native", "Allows users to manage house and view telemetry via smartphone")
+
+  Container(api, "API Gateway", "C#", "Processes commands and requests from users and hub")
+
+  ContainerDb(database, "Database", "PostgreSQL", "Stores all data")
+}
+
+Rel(user, webApp, "Uses", "HTTPS/REST")
+Rel(user, mobileApp, "Uses", "HTTPS/REST")
+
+Rel(webApp, api, "Process api requests", "JSON/HTTPS")
+Rel(mobileApp, api, "Process api requests", "JSON/HTTPS")
+Rel(hub, api, "Sends telemtry data", "HTTP POST")
+Rel(api, hub, "Sends commands", "HTTP POST")
+
+Rel(api, database, "Database queries", "SQL")
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+title WarmHouse As-Is Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "A user of warmhouse")
+Person(specialist, "Specialist", "A heating system connection specialist")
+
+System(SensorHandler, "Sensor Handler", "System managing sensors")
+System_Ext(TemperatureService, "Temperature Service", "External API for fetching temperature data by location or device")
+
+System(SensorHandler, "Sensor System", "Managing sensors in the house")
+
+
+Rel(user, SensorHandler, "Uses the system")
+Rel(specialist, SensorHandler,"Connects the heating system in the house to the current version of the system")
+
+Rel(SensorHandler, TemperatureService, "Get temperature data in real time")
+
+
+@enduml

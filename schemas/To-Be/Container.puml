@@ -3,28 +3,49 @@ title  WarmHouse Container Diagram
 
 top to bottom direction
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
 
 Person(user, "User", "A user of warmhouse system")
 System_Ext(hub, "Hub", "User's hub")
 
 Container_Boundary(WarmHouseSystem, "WarmHouse System") {
-  Container(webApp, "Web Application", "React", "Allows users to manage house and view telemetry")
-  Container(mobileApp, "Mobile Application", "React Native", "Allows users to manage house and view telemetry via smartphone")
+  Container(apiGateway, "API Gateway", "C#", "Routes requests to appropriate microservices")
 
-  Container(api, "API Gateway", "C#", "Processes commands and requests from users and hub")
-
-  ContainerDb(database, "Database", "PostgreSQL", "Stores all data")
+  Container(userApi, "User Api", "C#", "Handles authentication and user management")
+  Container(houseApi, "House Api", "C#", "Manages houses and room configuration")
+  Container(deviceApi, "Device Api", "C#", "Manages device registry and status")
+  Container(scenarioApi, "Scenario Api", "C#", "Manages automation scenarios")
+  Container(telemetryApi, "Telemetry Api", "C#", "Collects and processes telemetry data from hubs")
+  
+  Container(messageQueue, "Message Queue", "RabbitMQ/Kafka", "Buffers telemetry data for processing")
+  ContainerDb(database, "Database", "PostgreSQL", "Stores all system data")
+  ContainerDb(tsdb, "Time Series Database", "Prometheus", "Stores telemetry data")
 }
 
 Rel(user, webApp, "Uses", "HTTPS/REST")
 Rel(user, mobileApp, "Uses", "HTTPS/REST")
 
-Rel(webApp, api, "Process api requests", "JSON/HTTPS")
-Rel(mobileApp, api, "Process api requests", "JSON/HTTPS")
-Rel(hub, api, "Sends telemtry data", "HTTP POST")
-Rel(api, hub, "Sends commands", "HTTP POST")
+Rel(webApp, apiGateway, "Process api requests", "JSON/HTTPS")
+Rel(mobileApp, apiGateway, "Process api requests", "JSON/HTTPS")
 
-Rel(api, database, "Database queries", "SQL")
+Rel(hub, messageQueue, "Publishes telemetry data", "MQTT/AMQP")
+Rel(messageQueue, hub, "Send commands", "MQTT/AMQP")
+Rel(messageQueue, telemetryApi, "Process telemetry data", "Queue subscription")
+Rel(telemetryApi, messageQueue, "Publishes commands", "Queue subscription")
+
+Rel(apiGateway, userApi, "Routes requests", "Internal HTTP")
+Rel(apiGateway, houseApi, "Routes requests", "Internal HTTP")
+Rel(apiGateway, deviceApi, "Routes requests", "Internal HTTP")
+Rel(apiGateway, scenarioApi, "Routes requests", "Internal HTTP")
+
+Rel(userApi, database, "Reads/Writes", "SQL")
+Rel(houseApi, database, "Reads/Writes", "SQL")
+Rel(deviceApi, database, "Reads/Writes", "SQL")
+Rel(scenarioApi, database, "Reads/Writes", "SQL")
+
+Rel(telemetryApi, tsdb, "Reads/Writes telemetry data")
+
+Rel(deviceApi, telemetryApi, "Gets device telemetry data and user's commands")
+Rel(scenarioApi, telemetryApi, "Sends automation commands")
 
 @enduml

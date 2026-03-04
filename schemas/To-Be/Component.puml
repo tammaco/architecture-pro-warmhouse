@@ -44,8 +44,8 @@ Container_Boundary(Api, "Api Server") {
   ' Telemetry API
   Container(telemetryApi, "Telemetry API", "Python")
 
-  Container(messageQueue, "Message Queue", "RabbitMQ/Kafka", "Processed commands for hub")
   ContainerDb(database, "Database", "PostgreSQL")
+  ContainerDb(tsdb, "Time Series Database", "Prometheus")
 }
 
 Rel(api, authController, "HTTP/REST")
@@ -70,8 +70,9 @@ Rel(scenarioController, scenarioService, "Calls business logic")
 Rel(scenarioService, scenarioRepository, "Reads/Writes data")
 Rel(scenarioRepository, database, "SQL")
 
-Rel(deviceService, telemetryApi, "Gets device data")
-Rel(scenarioService, messageQueue, "Publishes to queue scenario actions")
-Rel(deviceService, messageQueue, "Publishes to queue users actions")
+Rel(telemetryApi, tsdb, "Reads/Writes telemetry data")
+
+Rel(deviceService, telemetryApi, "Sends device commands")
+Rel(scenarioService, telemetryApi, "Sends scenario commands")
 
 @enduml

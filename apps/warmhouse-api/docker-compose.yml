@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  telemetry-api:
+    build: ./TelemetryApi
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=development
+    networks:
+      - warmhouse-network
+
+  device-api:
+    build: ./DeviceApi
+    ports:
+      - "5166:5166"
+    environment:
+      - ASPNETCORE_URLS=http://+:5166
+      - ASPNETCORE_ENVIRONMENT=Development
+      - TelemetryApi__BaseUrl=http://telemetry-api:5001
+    depends_on:
+      - telemetry-api
+    networks:
+      - warmhouse-network
+
+networks:
+  warmhouse-network:
+    driver: bridge

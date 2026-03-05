@@ -1,0 +1,78 @@
+@startuml Warmaction Component Diagram
+title Warmaction Component Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(Api, "Api Server") {
+  Container(api, "API Gateway", "C#", "Single entry point for all APIs")
+  
+  ' Users API Components
+  Container(userApi, "User API", "C#") {
+    Component(authController, "Auth Controller")
+    Component(userController, "User Controller")
+    
+    Component(userService, "User Service")
+    Component(userRepository, "User Repository")
+  }
+  
+  ' House API Components
+  Container(houseApi, "House API", "C#") {
+    Component(houseController, "House Controller")
+    
+    Component(houseService, "House Service")
+    Component(houseRepository, "House Repository")
+  }
+
+  ' Device API Components
+  Container(deviceApi, "Device API", "C#") {
+    Component(deviceController, "Device Controller")
+    
+    Component(deviceService, "Device Service")
+    Component(deviceRepository, "Device Repository")
+  }
+
+  ' Scenario API Components
+  Container(scenarioApi, "Scenario API", "C#") {
+    Component(scenarioController, "Scenario Controller")
+    
+    Component(scenarioService, "Scenario Service")
+    Component(scenarioRepository, "Scenario Repository")
+  }  
+
+  ' Telemetry API
+  Container(telemetryApi, "Telemetry API", "Python")
+
+  ContainerDb(database, "Database", "PostgreSQL")
+  ContainerDb(tsdb, "Time Series Database", "Prometheus")
+}
+
+Rel(api, authController, "HTTP/REST")
+Rel(api, userController, "HTTP/REST")
+Rel(authController, userService, "Calls business logic")
+Rel(userController, userService, "Calls business logic")
+Rel(userService, userRepository, "Reads/Writes data")
+Rel(userRepository, database, "SQL")
+
+Rel(api, houseController, "HTTP/REST")
+Rel(houseController, houseService, "Calls business logic")
+Rel(houseService, houseRepository, "Reads/Writes data")
+Rel(houseRepository, database, "SQL")
+
+Rel(api, deviceController, "HTTP/REST")
+Rel(deviceController, deviceService, "Calls business logic")
+Rel(deviceService, deviceRepository, "Reads/Writes data")
+Rel(deviceRepository, database, "SQL")
+
+Rel(api, scenarioController, "HTTP/REST")
+Rel(scenarioController, scenarioService, "Calls business logic")
+Rel(scenarioService, scenarioRepository, "Reads/Writes data")
+Rel(scenarioRepository, database, "SQL")
+
+Rel(telemetryApi, tsdb, "Reads/Writes telemetry data")
+
+Rel(deviceService, telemetryApi, "Sends device commands")
+Rel(scenarioService, telemetryApi, "Sends scenario commands")
+
+@enduml

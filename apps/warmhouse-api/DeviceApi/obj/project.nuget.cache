@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "mlQUmpKeeX8=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Lenovo\\Documents\\Архитектура ПО\\1-спринт\\architecture-pro-warmhouse\\apps\\warmhouse-api\\DeviceApi\\DeviceApi.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.13\\microsoft.netcore.app.ref.9.0.13.nupkg.sha512",
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.13\\microsoft.windowsdesktop.app.ref.9.0.13.nupkg.sha512",
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.13\\microsoft.aspnetcore.app.ref.9.0.13.nupkg.sha512",
+    "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\9.0.13\\microsoft.netcore.app.host.win-x64.9.0.13.nupkg.sha512"
+  ],
+  "logs": []
+}

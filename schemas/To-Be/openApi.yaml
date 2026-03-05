@@ -1,0 +1,868 @@
+openapi: 3.0.0
+info:
+  title: WarmHouse API
+  description: API for smart home automation system
+  version: 1.0.0
+
+servers:
+  - url: https://localhost:7000/
+    description: Local 
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Users
+    description: User management
+  - name: Houses
+    description: House management
+  - name: Devices
+    description: Device management and actions
+  - name: Scenarios
+    description: Automation scenarios
+  - name: Hub
+    description: Hub communication
+
+paths:
+# Users
+  /users/register:
+    post:
+      tags: [Users]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        200:
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/login:
+    post:
+      tags: [Users]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [login, password]
+              properties:
+                login:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        401:
+          description: Invalid credentials
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: User not found
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# Houses
+  /houses:
+    post:
+      tags: [Houses]
+      summary: Create new house
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                hub_serial_number:
+                    type: string
+                hub_ip_address:
+                    type: string
+      responses:
+        200:
+          description: House created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/House'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+  /houses/{id}:
+    get:
+      tags: [Houses]
+      summary: Get house details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: House details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/House'
+        404:
+          description: House not found
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Houses]
+      summary: Update house details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                hub_serial_number:
+                    type: string
+                hub_ip_address:
+                    type: string
+      responses:
+        200:
+          description: House updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/House'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Houses]
+      summary: Remove house
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: House deleted
+        404:
+          description: House not found
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# Devices
+  /devices:
+    post:
+      tags: [Devices]
+      summary: Add new device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceRequest'
+      responses:
+        200:
+          description: Device created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        400:
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Devices]
+      summary: Get all devices
+      parameters:
+        - name: houseId
+          in: query
+          schema:
+            type: integer
+        - name: locationId
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+ 
+  /devices/{id}:
+    get:
+      tags: [Devices]
+      summary: Get device details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        404:
+          description: Device not found
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Devices]
+      summary: Update device details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceRequest'
+      responses:
+        200:
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        404:
+          description: Device not found
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /devices/{id}/state:
+    get:
+      tags: [Devices]
+      summary: Get current device state
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Current device state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceState'
+        404:
+          description: Device not found
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /devices/{id}/actions:
+    post:
+      tags: [Actions]
+      summary: Execute action on device
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteDeviceActionRequest'
+      responses:
+        200:
+          description: Action executed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceAction'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: [Actions]
+      summary: Get actions history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Action history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceAction'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /devices/{id}/telemetry:
+    get:
+      tags: [Telemetry]
+      summary: Get device telemetry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Telemetry data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TelemetryData'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# Scenarios
+  /scenarios:
+    post:
+      tags: [Scenarios]
+      summary: Create automation scenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScenarioRequest'
+      responses:
+        200:
+          description: Scenario created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [Scenarios]
+      summary: List scenarios
+      parameters:
+        - name: houseId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scenario'
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scenarios/{id}:
+    put:
+      tags: [Scenarios]
+      summary: Update scenario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScenarioRequest'
+      responses:
+        200:
+          description: Scenario updated
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Scenarios]
+      summary: Remove scenario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Scenario deleted
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+# Hub  
+  /hub/telemetry:
+    post:
+      tags: [Hub]
+      summary: Receive telemetry from hub
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HubTelemetryData'
+      responses:
+        200:
+          description: Telemetry received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+                  timestamp:
+                    type: string
+                    format: date-time
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for hub authentication
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        details:
+          type: string
+          nullable: true
+# Users
+    CreateUserRequest:
+      type: object
+      required: [name, login, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        login:
+          type: string
+        password:
+          type: string
+          format: password
+          minLength: 8
+    User:
+      type: object
+      required: [id, name, login]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        login:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+# House
+    House:
+      type: object
+      required: [id, name, user_id]
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        address:
+          type: string
+        user_id:
+          type: integer
+          format: int64
+        hub_serial_number:
+             type: string
+        hub_ip_address:
+             type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+# Device
+    CreateDeviceRequest:
+      type: object
+      required: [serial_number, house_id, device_type_id]
+      properties:
+        serial_number:
+          type: string
+        name:
+          type: string
+        is_active:
+          type: boolean
+        device_type_id:
+          type: integer
+          format: int64
+        house_id:
+          type: integer
+          format: int64
+        location_id:
+          type: integer
+          format: int64
+    Device:
+      type: object
+      required: [id, serial_number, house_id, device_type_id]
+      properties:
+        id:
+          type: integer
+          format: int64
+        serial_number:
+          type: string
+        name:
+          type: string
+        is_active:
+          type: boolean
+        device_type_id:
+          type: integer
+          format: int64
+    DeviceState:
+      type: object
+      required: [device_id, state, last_updated]
+      properties:
+        device_id:
+          type: integer
+          format: int64
+        state:
+          type: object
+          example:
+            power: "on"
+        last_updated:
+          type: string
+          format: date-time
+    ExecuteDeviceActionRequest:
+      type: object
+      required: [action_id]
+      properties:
+        action_id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+        scenario_id:
+          type: integer
+          format: int64
+          nullable: true
+        parameters:
+          type: object
+          example:
+            brightness: 75
+    DeviceAction:
+      type: object
+      required: [id, device_id, action_id, timestamp, source]
+      properties:
+        id:
+          type: integer
+          format: int64
+        device_id:
+          type: integer
+          format: int64
+        action_id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+          nullable: true
+        scenario_id:
+          type: integer
+          format: int64
+          nullable: true
+        status:
+          type: string
+          enum: [pending, sent, completed, failed]
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [user, scenario, api, hub]
+    TelemetryData:
+      type: object
+      required: [id, device_id, metric, value, unit, timestamp]
+      properties:
+        id:
+          type: integer
+          format: int64
+        device_id:
+          type: integer
+          format: int64
+        metric:
+          type: string
+          enum: [temperature, power, battery, brightness]
+        value:
+          type: number
+          format: float
+        unit:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+# Scenario  
+    ScenarioAction:
+      type: object
+      required: [device_id, action_id]
+      properties:
+        device_id:
+          type: integer
+          format: int64
+        action_id:
+          type: integer
+          format: int64
+        parameters:
+          type: object
+          example: 
+            brightness: 80
+            temperature: 22.5
+            transition: 500
+    CreateScenarioRequest:
+      type: object
+      required: [name, actions]
+      properties:
+        name:
+          type: string
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScenarioAction'
+        schedule:
+          $ref: '#/components/schemas/Schedule'
+    Schedule:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [once, daily, weekly]
+        times:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:
+                type: integer
+                minimum: 0
+                maximum: 23
+              minute:
+                type: integer
+                minimum: 0
+                maximum: 59
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              week_day:
+                type: integer
+                minimum: 1
+                maximum: 7
+# Hub 
+    HubTelemetryData:
+      type: object
+      required: [hub_id, device_id, data]
+      properties:
+        hub_id:
+          type: string
+        device_id:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+              value:
+                type: number
+              unit:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
